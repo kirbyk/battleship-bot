@@ -20,6 +20,15 @@ GAME_SERVER = "battleshipgs.purduehackers.com"
 letters = ['A','B','C','D','E','F','G','H']
 grid = [[-1 for x in range(8)] for x in range(8)] # Fill Grid With -1s
 
+
+class Targeter:
+  def __init__(self):
+    self.hit = ()
+    self.miss = []
+    self.success = []
+    self.targeting = False
+
+
 def placeShips(opponentID):
   global grid
   # Fill Grid With -1s
@@ -32,19 +41,53 @@ def placeShips(opponentID):
   placeBattleship("D0","D3") # Ship Length = 4
   placeCarrier("E0","E4") # Ship Length = 5
 
+
 def makeMove():
   global grid
+
+  target = Targeter()
+
   for x in range(0,8): # Loop Till Find Square that has not been hit
     for y in range(0,8):
+
+      # Instead of going square by square, try and target
+      if target.targeting:
+        print "Targeting ship"
+        targetShip(target)
+
       if grid[x][y] == -1:
         wasHitSunkOrMiss = placeMove(letters[x]+str(y)) # placeMove(LetterNumber) - Example: placeMove(D5)
 
         if(wasHitSunkOrMiss == "Hit" or wasHitSunkOrMiss == "Sunk"):
+          print "Hit"
           grid[x][y] = 1
+          target.targeting = True
+          target.hit = (x,y)
         else:
           grid[x][y] = 0
 
         return
+
+
+def targetShip(target):
+  x = target.hits[0]
+  y = target.hits[1]
+
+  possibilities = [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+
+  for coord in possibilities:
+    print coord
+    if coord in target.miss:
+      continue
+
+    result = placeMove(letters[x]+str(y))
+    if result == "Hit":
+      target.success.append(coord)
+    else:
+      target.miss.append(coord)
+
+  return
+
 
 ############################## ^^^^^ PUT YOUR CODE ABOVE HERE ^^^^^ ##############################
 
@@ -93,7 +136,7 @@ def gameMain():
     if not data:
       s.close()
       return
-    
+
     if "Welcome" in data: # "Welcome To Battleship! You Are Playing:xxxx"
       welcomeMsg = data.split(":")
       placeShips(welcomeMsg[1])
