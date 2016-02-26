@@ -10,6 +10,7 @@
 import sys
 import socket
 import time
+import random
 
 API_KEY = "175860009" ########## PUT YOUR API KEY HERE ##########
 
@@ -26,11 +27,11 @@ def placeShips(opponentID):
   grid = [[-1 for x in range(8)] for x in range(8)] # Fill Grid With -1s
 
   # Place Ships
-  placeDestroyer("A0","A1") # Ship Length = 2
-  placeSubmarine("B0","B2") # Ship Length = 3
-  placeCruiser("C0","C2") # Ship Length = 3
-  placeBattleship("D0","D3") # Ship Length = 4
-  placeCarrier("E0","E4") # Ship Length = 5
+  placeDestroyer("A2","B2") # Ship Length = 2
+  placeSubmarine("C3","C5") # Ship Length = 3
+  placeCruiser("D6","F6") # Ship Length = 3
+  placeBattleship("G2","G5") # Ship Length = 4
+  placeCarrier("D0","H0") # Ship Length = 5
 
 def makeMove():
   global grid
@@ -93,7 +94,7 @@ def gameMain():
     if not data:
       s.close()
       return
-    
+
     if "Welcome" in data: # "Welcome To Battleship! You Are Playing:xxxx"
       welcomeMsg = data.split(":")
       placeShips(welcomeMsg[1])
