@@ -28,7 +28,11 @@ class Targeter:
     self.miss = []
     self.success = []
     self.targeting = False
+    self.following = False
+    self.reset = False
+    self.hitlist = []
 
+target = Targeter()
 
 def placeShips(opponentID):
   global grid
@@ -46,24 +50,26 @@ def placeShips(opponentID):
 def makeMove():
   global grid
 
-  target = Targeter()
+  if target.targeting:
+    print "Targeting ship"
+    targetShip(target)
+    return
 
   for x in range(0,8): # Loop Till Find Square that has not been hit
     for y in range(0,8):
 
-      # Instead of going square by square, try and target
-      if target.targeting:
-        print "Targeting ship"
-        targetShip(target)
-
       if grid[x][y] == -1:
         wasHitSunkOrMiss = placeMove(letters[x]+str(y)) # placeMove(LetterNumber) - Example: placeMove(D5)
 
-        if(wasHitSunkOrMiss == "Hit" or wasHitSunkOrMiss == "Sunk"):
+        if wasHitSunkOrMiss == "Hit":
           print "Hit"
           grid[x][y] = 1
           target.targeting = True
           target.hit = (x,y)
+          target.hitlist.append((x, y))
+        elif wasHitSunkOrMiss == "Sunk":
+          print "Sunk"
+          target.targeting = False
         else:
           grid[x][y] = 0
 
@@ -71,21 +77,59 @@ def makeMove():
 
 
 def targetShip(target):
-  x = target.hits[0]
-  y = target.hits[1]
 
+  # If we have hit this target keep going
+  if target.following:
+    x = target.success[-1][0]
+    y = target.success[-1][1]
+  elif target.reset:
+    # Go back to first square we hit
+    x = target.success[0][0]
+    y = target.success[0][1]
+  else:
+    x = target.hit[0]
+    y = target.hit[1]
+
+  # Square grid around target
   possibilities = [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]
 
   for coord in possibilities:
-    print coord
+
+    # Discard coords that where we already missed or that don't exist
+    if coord in target.hitlist:
+      print coord
+      print "Already hit here"
+      continue
     if coord in target.miss:
+      print coord
+      print "Already missed here"
+      continue
+    if coord[0] < 0 or coord[1] < 0 or coord[0] > 7 or coord[1] > 7:
       continue
 
+    # Bombs away
+    print letters[x]+str(y)
     result = placeMove(letters[x]+str(y))
     if result == "Hit":
+      print "Targeted hit"
       target.success.append(coord)
+      target.hitlist.append(coord)
+      target.following = True
+    elif result == "Sunk":
+      print "Targeted sink"
+      target.targeting = False
+      target.hit = ()
+    elif result == "Miss":
+      if target.following:
+        target.reset = True
+        target.following = False
     else:
+      print result
+
       target.miss.append(coord)
+
+    # Ugly
+    break
 
   return
 
@@ -139,6 +183,7 @@ def gameMain():
       return
 
     if "Welcome" in data: # "Welcome To Battleship! You Are Playing:xxxx"
+      print data
       welcomeMsg = data.split(":")
       placeShips(welcomeMsg[1])
       if "Destroyer" in data: # Only Place Can Receive Double Message, Pass Through
