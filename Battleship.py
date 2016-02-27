@@ -32,7 +32,11 @@ class Targeter:
     self.reset = False
     self.hitlist = []
 
-target = Targeter()
+class MoveTracker:
+  def __init__(self):
+    self.x = 2
+    self.y = 2
+
 
 def placeShips(opponentID):
   global grid
@@ -155,6 +159,17 @@ def makeMove():
   for x in range(0,8): # Loop Till Find Square that has not been hit
     for y in range(0,8):
 
+      print "coords"
+      print x
+      print y
+
+      print "global coords"
+      print movement.x
+      print movement.y
+
+      if x < movement.x or y < movement.y:
+        continue
+
       if grid[x][y] == -1:
         wasHitSunkOrMiss = placeMove(letters[x]+str(y)) # placeMove(LetterNumber) - Example: placeMove(D5)
 
@@ -170,22 +185,25 @@ def makeMove():
         else:
           grid[x][y] = 0
 
+        movement.x = x
+        movement.y = y
         return
 
 
 def targetShip(target):
+  x = target.hit[0]
+  y = target.hit[1]
 
   # If we have hit this target keep going
   if target.following:
+    print "following"
     x = target.success[-1][0]
     y = target.success[-1][1]
   elif target.reset:
+    print "reset"
     # Go back to first square we hit
-    x = target.success[0][0]
-    y = target.success[0][1]
-  else:
-    x = target.hit[0]
-    y = target.hit[1]
+    # x = target.success[0][0]
+    # y = target.success[0][1]
 
   # Square grid around target
   possibilities = [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]
@@ -217,9 +235,7 @@ def targetShip(target):
       target.targeting = False
       target.hit = ()
     elif result == "Miss":
-      if target.following:
-        target.reset = True
-        target.following = False
+      target.miss.append(coord)
     else:
       print result
 
@@ -266,6 +282,7 @@ dataPassthrough = None
 
 def gameMain():
   global s, dataPassthrough, moveMade
+  global target, movement
   while True:
     if(dataPassthrough == None):
       if s == None:
@@ -282,6 +299,8 @@ def gameMain():
     if "Welcome" in data: # "Welcome To Battleship! You Are Playing:xxxx"
       print data
       welcomeMsg = data.split(":")
+      target = Targeter()
+      movement = MoveTracker()
       placeShips(welcomeMsg[1])
       if "Destroyer" in data: # Only Place Can Receive Double Message, Pass Through
         dataPassthrough = "Destroyer(2):"
