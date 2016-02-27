@@ -23,15 +23,112 @@ grid = [[-1 for x in range(8)] for x in range(8)] # Fill Grid With -1s
 
 def placeShips(opponentID):
   global grid
+  start = time.time()
   # Fill Grid With -1s
   grid = [[-1 for x in range(8)] for x in range(8)] # Fill Grid With -1s
 
-  # Place Ships
-  placeDestroyer("A2","B2") # Ship Length = 2
-  placeSubmarine("C3","C5") # Ship Length = 3
-  placeCruiser("D6","F6") # Ship Length = 3
-  placeBattleship("G2","G5") # Ship Length = 4
-  placeCarrier("D0","H0") # Ship Length = 5
+  random.seed()
+  taken = []
+  found = False
+
+  def getStr(c, i):
+      return c+str(i)
+
+  #destroyer
+  pos1c = random.choice(letters[:-1])
+  pos1n = random.randint(0,6)
+  pos2c = pos1c
+  pos2n = pos1n
+  if random.randint(0,1) == 1:
+      pos2c = letters[letters.index(pos1c)+1]
+  else:
+      pos2n += 1
+  placeDestroyer(getStr(pos1c,pos1n),getStr(pos2c,pos2n)) # Ship Length = 2
+  taken.extend([getStr(pos1c,pos1n),getStr(pos2c,pos2n)])
+
+  #submarine
+  while not found:
+      pos1c = random.choice(letters[:-2])
+      pos1n = random.randint(0,5)
+      pos2c = pos1c
+      pos2n = pos1n
+      if random.randint(0,1) == 1:
+         pos2c = letters[letters.index(pos1c)+2]
+         if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(letters[letters.index(pos1c)+1],pos1n) in taken:
+             continue
+         taken.append(getStr(letters[letters.index(pos1c)+1],pos1n))
+      else:
+         pos2n += 2
+         if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(pos1c,pos1n+1) in taken:
+             continue
+         taken.append(getStr(pos1c,pos1n+1))
+      found = True
+  found = False
+  placeSubmarine(getStr(pos1c,pos1n), getStr(pos2c,pos2n)) # Ship Length = 3
+  taken.extend([getStr(pos1c,pos1n), getStr(pos2c,pos2n)])
+
+  #cruiser
+  while not found:
+      pos1c = random.choice(letters[:-2])
+      pos1n = random.randint(0,5)
+      pos2c = pos1c
+      pos2n = pos1n
+      if random.randint(0,1) == 1:
+          pos2c = letters[letters.index(pos1c)+2]
+          if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(letters[letters.index(pos1c)+1],pos1n) in taken:
+              continue
+          taken.append(getStr(letters[letters.index(pos1c)+1],pos1n))
+      else:
+        pos2n += 2
+        if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(pos1c,pos1n+1) in taken:
+            continue
+        taken.append(getStr(pos1c,pos1n+1))
+      found = True
+  found = False
+  placeCruiser(getStr(pos1c,pos1n), getStr(pos2c,pos2n)) # Ship Length = 3
+  taken.extend([getStr(pos1c,pos1n), getStr(pos2c,pos2n)])
+
+  #battleship
+  while not found:
+      pos1c = random.choice(letters[:-3])
+      pos1n = random.randint(0,4)
+      pos2c = pos1c
+      pos2n = pos1n
+      if random.randint(0,1) == 1:
+          pos2c = letters[letters.index(pos1c)+3]
+          if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(letters[letters.index(pos1c)+1],pos1n) in taken or getStr(letters[letters.index(pos1c)+2],pos1n) in taken:
+              continue
+          taken.append(getStr(letters[letters.index(pos1c)+1],pos1n))
+          taken.append(getStr(letters[letters.index(pos1c)+2],pos1n))
+      else:
+        pos2n += 3
+        if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(pos1c,pos1n+1) in taken or getStr(pos1c,pos1n+2) in taken:
+            continue
+        taken.append(getStr(pos1c,pos1n+1))
+        taken.append(getStr(pos1c,pos1n+2))
+      found = True
+  found = False
+  placeBattleship(getStr(pos1c,pos1n), getStr(pos2c,pos2n)) # Ship Length = 4
+  taken.extend([getStr(pos1c,pos1n), getStr(pos2c,pos2n)])
+
+  #carrier
+  while not found:
+    pos1c = random.choice(letters[:-4])
+    pos1n = random.randint(0,3)
+    pos2c = pos1c
+    pos2n = pos1n
+    if random.randint(0,1) == 1:
+        pos2c = letters[letters.index(pos1c)+4]
+        if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(letters[letters.index(pos1c)+1],pos1n) in taken or getStr(letters[letters.index(pos1c)+2],pos1n) in taken or getStr(letters[letters.index(pos1c)+3],pos1n) in taken:
+            continue
+    else:
+      pos2n += 4
+      if getStr(pos1c,pos1n) in taken or getStr(pos2c,pos2n) in taken or getStr(pos1c,pos1n+1) in taken or getStr(pos1c,pos1n+2) in taken or getStr(pos1c,pos1n+3) in taken:
+          continue
+    found = True
+  placeCarrier(getStr(pos1c,pos1n), getStr(pos2c,pos2n)) # Ship Length = 4
+
+  print "Placed : ", time.time()-start,"\n"
 
 def makeMove():
   global grid
